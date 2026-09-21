@@ -1,0 +1,71 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Free Fire Prime Level Checker</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:#0b0d12;color:#fff;padding:20px}
+.wrap{max-width:760px;margin:auto}.card{background:#151922;border:1px solid #292f3b;border-radius:20px;padding:22px;margin-bottom:16px;box-shadow:0 12px 35px #0005}
+h1{margin:0 0 8px}.muted{color:#9da5b4}label{display:block;margin:14px 0 7px;color:#aeb6c5}
+input,select{width:100%;padding:14px;border-radius:12px;border:1px solid #343b49;background:#0e1117;color:#fff;font-size:16px}
+button{width:100%;padding:14px;margin-top:18px;border:0;border-radius:12px;background:#ff9800;color:#111;font-weight:800;font-size:16px;cursor:pointer}
+.result{display:none;text-align:center}.prime{font-size:52px;font-weight:900;margin:8px}.badge{display:inline-block;padding:8px 14px;border-radius:999px;background:#123d29;color:#67e8a5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left;margin-top:18px}.item{background:#0e1117;padding:13px;border-radius:12px}.k{font-size:12px;color:#8992a3}.v{font-weight:700;margin-top:3px;word-break:break-word}
+.error{color:#ff8d8d;margin-top:14px}code{color:#9ee7ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<h1>🔥 Free Fire Prime Level</h1>
+<p class="muted">UID + Server Region → Prime Level</p>
+<label>Player UID</label>
+<input id="uid" inputmode="numeric" placeholder="Enter Free Fire UID">
+<label>Server Region</label>
+<select id="region"></select>
+<button onclick="checkPrime()">Check Prime Level</button>
+<div id="error" class="error"></div>
+</div>
+<div class="card result" id="result">
+<div class="badge">LIVE RESULT</div>
+<div class="prime" id="prime">—</div>
+<div class="muted">Prime Level</div>
+<div class="grid" id="details"></div>
+</div>
+<div class="card">
+<p class="muted">API endpoint</p>
+<code>GET /api/prime?uid=PLAYER_UID&region=BD</code>
+</div>
+</div>
+<script>
+const regions={
+BD:"🇧🇩 Bangladesh",IND:"🇮🇳 India",PK:"🇵🇰 Pakistan",SG:"🇸🇬 Singapore",
+ID:"🇮🇩 Indonesia",TH:"🇹🇭 Thailand",VN:"🇻🇳 Vietnam",TW:"🇹🇼 Taiwan",
+BR:"🇧🇷 Brazil",SAC:"🌎 South America",US:"🇺🇸 United States",
+NA:"🌎 North America",ME:"🌍 Middle East",RU:"🇷🇺 Russia",
+CIS:"🌍 CIS",EUROPE:"🇪🇺 Europe"
+};
+const sel=document.getElementById("region");
+Object.entries(regions).forEach(([k,v])=>sel.add(new Option(v,k)));
+async function checkPrime(){
+ const uid=document.getElementById("uid").value.trim(), region=sel.value;
+ const err=document.getElementById("error"), res=document.getElementById("result");
+ err.textContent=""; res.style.display="none";
+ if(!/^\d{5,15}$/.test(uid)){err.textContent="Enter a valid 5–15 digit UID.";return}
+ try{
+  const r=await fetch(`/api/prime?uid=${encodeURIComponent(uid)}&region=${encodeURIComponent(region)}`,{cache:"no-store"});
+  const d=await r.json();
+  if(!d.success) throw new Error(d.error||"Check failed");
+  document.getElementById("prime").textContent=d.prime_level==null?"Not returned":`Prime ${d.prime_level}`;
+  document.getElementById("details").innerHTML=[
+   ["Nickname",d.nickname||"—"],["UID",d.uid],["Region",`${d.region_name} (${d.region})`],
+   ["Checked",new Date(d.checked_at).toLocaleString()]
+  ].map(x=>`<div class="item"><div class="k">${x[0]}</div><div class="v">${x[1]}</div></div>`).join("");
+  res.style.display="block";
+ }catch(e){err.textContent=e.message}
+}
+</script>
+</body>
+</html>

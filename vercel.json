@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "functions": {
+    "api/prime.py": {
+      "runtime": "python3.12"
+    }
+  },
+  "routes": [
+    {"src": "/api/prime", "dest": "/api/prime.py"},
+    {"src": "/", "dest": "/index.html"}
+  ]
+}
